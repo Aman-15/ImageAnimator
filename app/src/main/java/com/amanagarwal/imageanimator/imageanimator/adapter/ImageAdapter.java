@@ -44,7 +44,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder imageViewHolder, int i) {
-        imageViewHolder.imageTextView.setText(imageList.get(i).getTitle());
+        String title = imageList.get(i).getTitle();
+        int maxLength = title.length() < 20 ? title.length() : 20;
+        imageViewHolder.imageTextView.setText(imageList.get(i).getTitle().substring(0, maxLength));
 
         Picasso picasso = new Picasso.Builder(context).listener(new Picasso.Listener() {
             @Override
@@ -59,7 +61,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         picasso.with(context)
                 .load(TextUtil.formatURL(imageList.get(i).getMedia().getLink()))
                 .placeholder(R.mipmap.ic_launcher)
-                .resize(60, 60)
+                .fit()
+                .centerCrop()
                 .into(imageViewHolder.imageHolderImageView);
     }
 

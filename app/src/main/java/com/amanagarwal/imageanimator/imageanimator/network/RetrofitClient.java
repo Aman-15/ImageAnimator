@@ -6,6 +6,12 @@ import com.amanagarwal.imageanimator.imageanimator.network.models.Image;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -38,18 +44,35 @@ public class RetrofitClient {
             retrofit = getClient();
 
         ImageAPI api = retrofit.create(ImageAPI.class);
-        Call<Image> call = api.getImageItems();
+        Call<ResponseBody> call = api.getImageItems();
 
-        call.enqueue(new Callback<Image>() {
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<Image> call, Response<Image> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 Log.e(LOG_TAG, "onResponse");
-                Image image = response.body();
-                imageDataListener.onDataFetch(image);
+                String jsonStr;
+
+                try {
+                    jsonStr = response.body().string();
+                    if (!jsonStr.isEmpty()) {
+                        Gson gson = new Gson();
+                        jsonStr = jsonStr.replace("jsonFlickrFeed(", "");
+                        JSONObject jsonObject = new JSONObject(jsonStr);
+
+                        Image image = gson.fromJson(jsonObject.toString(), Image.class);
+                        imageDataListener.onDataFetch(image);
+                    }
+                } catch (IOException e) {
+                    Log.e(LOG_TAG, e.getMessage());
+                    imageDataListener.onDataFetch(null);
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, e.getMessage());
+                    imageDataListener.onDataFetch(null);
+                }
             }
 
             @Override
-            public void onFailure(Call<Image> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e(LOG_TAG, "onFailure");
                 Log.e(LOG_TAG, t.toString());
                 imageDataListener.onFailure();
