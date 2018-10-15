@@ -9,10 +9,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.amanagarwal.imageanimator.imageanimator.R;
+import com.amanagarwal.imageanimator.imageanimator.activity.MainActivity;
 import com.amanagarwal.imageanimator.imageanimator.adapter.ImageAdapter;
 import com.amanagarwal.imageanimator.imageanimator.network.models.Image;
 import com.amanagarwal.imageanimator.imageanimator.network.ImageDataListener;
@@ -77,6 +80,8 @@ public class ImageListFragment extends Fragment implements ImageDataListener {
     public void onDataFetch(Image image) {
         adaptor.setData(image.getItems());
         imageListRecyclerView.setAdapter(adaptor);
+        LayoutAnimationController animation = AnimationUtils.loadLayoutAnimation(getContext(), R.anim.layout_animation_fall_down);
+        imageListRecyclerView.setLayoutAnimation(animation);
         imageListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         progressBar.setVisibility(View.GONE);
     }

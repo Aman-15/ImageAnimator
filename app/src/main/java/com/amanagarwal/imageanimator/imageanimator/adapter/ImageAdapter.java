@@ -1,8 +1,14 @@
 package com.amanagarwal.imageanimator.imageanimator.adapter;
 
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,9 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amanagarwal.imageanimator.imageanimator.R;
 import com.amanagarwal.imageanimator.imageanimator.Utils.TextUtil;
+import com.amanagarwal.imageanimator.imageanimator.activity.MainActivity;
 import com.amanagarwal.imageanimator.imageanimator.network.models.ImageItem;
 import com.squareup.picasso.Picasso;
 
@@ -43,23 +51,15 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ImageViewHolder imageViewHolder, int i) {
-        String title = imageList.get(i).getTitle();
-        int maxLength = title.length() < 20 ? title.length() : 20;
-        imageViewHolder.imageTextView.setText(imageList.get(i).getTitle().substring(0, maxLength));
+    public void onBindViewHolder(@NonNull final ImageViewHolder imageViewHolder, int i) {
+        final ImageItem item = imageList.get(i);
 
-        Picasso picasso = new Picasso.Builder(context).listener(new Picasso.Listener() {
-            @Override
-            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
-                Log.e(LOG_TAG, "onImageLoadFailed");
-                exception.printStackTrace();
-            }
-        }).build();
+        String title = item.getTitle();
+        int maxLength = title.length() < 40 ? title.length() : 40;
+        imageViewHolder.imageTextView.setText(item.getTitle().substring(0, maxLength));
 
-        picasso.with(context).setLoggingEnabled(true);
-
-        picasso.with(context)
-                .load(TextUtil.formatURL(imageList.get(i).getMedia().getLink()))
+        Picasso.with(context)
+                .load(TextUtil.formatURL(item.getMedia().getLink()))
                 .placeholder(R.mipmap.ic_launcher)
                 .fit()
                 .centerCrop()
