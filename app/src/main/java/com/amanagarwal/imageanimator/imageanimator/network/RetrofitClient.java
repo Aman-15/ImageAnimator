@@ -62,10 +62,10 @@ public class RetrofitClient {
                         Image image = gson.fromJson(jsonObject.toString(), Image.class);
                         imageDataListener.onDataFetch(image);
                     }
-                } catch (IOException e) {
+                } catch (JSONException e) {
                     Log.e(LOG_TAG, e.getMessage());
                     imageDataListener.onDataFetch(null);
-                } catch (JSONException e) {
+                } catch (IOException e) {
                     Log.e(LOG_TAG, e.getMessage());
                     imageDataListener.onDataFetch(null);
                 }

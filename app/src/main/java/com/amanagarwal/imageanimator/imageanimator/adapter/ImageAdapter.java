@@ -1,27 +1,23 @@
 package com.amanagarwal.imageanimator.imageanimator.adapter;
 
-import android.app.ActivityOptions;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewCompat;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.amanagarwal.imageanimator.imageanimator.R;
 import com.amanagarwal.imageanimator.imageanimator.Utils.TextUtil;
-import com.amanagarwal.imageanimator.imageanimator.activity.MainActivity;
+import com.amanagarwal.imageanimator.imageanimator.fragment.ImageOnClickListener;
 import com.amanagarwal.imageanimator.imageanimator.network.models.ImageItem;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -30,11 +26,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
     private static String LOG_TAG = ImageAdapter.class.getName();
 
-    private Context context;
     private List<ImageItem> imageList;
+    private ImageOnClickListener imageOnClickListener;
 
-    public ImageAdapter(Context context, List<ImageItem> imageList) {
-        this.context = context;
+    public ImageAdapter(List<ImageItem> imageList, ImageOnClickListener imageOnClickListener) {
+        this.imageOnClickListener = imageOnClickListener;
         this.imageList = imageList;
     }
 
@@ -45,7 +41,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
     @NonNull
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        LayoutInflater inflater = LayoutInflater.from(context);
+        LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         View view = inflater.inflate(R.layout.image_list, null);
         return new ImageViewHolder(view);
     }
@@ -58,12 +54,34 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         int maxLength = title.length() < 40 ? title.length() : 40;
         imageViewHolder.imageTextView.setText(item.getTitle().substring(0, maxLength));
 
-        Picasso.with(context)
+        Picasso.with(imageViewHolder.itemView.getContext())
                 .load(TextUtil.formatURL(item.getMedia().getLink()))
                 .placeholder(R.mipmap.ic_launcher)
                 .fit()
                 .centerCrop()
-                .into(imageViewHolder.imageHolderImageView);
+                .into(imageViewHolder.imageHolderImageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        Bitmap imageBitmap = ((BitmapDrawable) imageViewHolder.imageHolderImageView.getDrawable()).getBitmap();
+                        RoundedBitmapDrawable imageDrawable = RoundedBitmapDrawableFactory.create(null, imageBitmap);
+                        imageDrawable.setCircular(true);
+                        imageDrawable.setCornerRadius(Math.max(imageBitmap.getWidth(), imageBitmap.getHeight()) / 2.0f);
+                        imageViewHolder.imageHolderImageView.setImageDrawable(imageDrawable);
+                    }
+
+                    @Override
+                    public void onError() {
+
+                    }
+                });
+
+        imageViewHolder.imageHolderImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                imageOnClickListener.onImageClick(imageViewHolder.imageHolderImageView, TextUtil.formatURL(item.getMedia().getLink()));
+                imageOnClickListener.zoomImageFromThumb(imageViewHolder.imageHolderImageView, imageViewHolder.imageHolderImageView.getDrawable(), TextUtil.formatURL(item.getMedia().getLink()));
+            }
+        });
     }
 
     @Override
@@ -75,12 +93,14 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
         TextView imageTextView;
         ImageView imageHolderImageView;
+        CardView imageItemCardView;
 
         ImageViewHolder(@NonNull View itemView) {
             super(itemView);
 
             imageTextView = itemView.findViewById(R.id.imageTextView);
             imageHolderImageView = itemView.findViewById(R.id.imageHolderImageView);
+            imageItemCardView = itemView.findViewById(R.id.imageItemCardView);
         }
     }
 
